@@ -1,0 +1,19 @@
+@CHARSET "UTF-8";
+#piechart
+{
+	width : 300px;
+	height : 300px;
+}
+#statschart
+{
+	width : 600px;
+	height : 300px;
+}
+#revenueStatChart 
+{
+	width : 630px;
+	height : 350px;
+}
+.stat-card {
+	min-height : 170px;
+}

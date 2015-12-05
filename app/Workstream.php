@@ -1,0 +1,186 @@
+<?php
+
+
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+
+
+class Workstream extends Model {
+
+	/**
+	 * The database table used by the model.
+	 *
+	 * @var string
+	 */
+	protected $table = 'workstream';
+	
+
+	/**
+	 * The attributes excluded from the model's JSON form.
+	 *
+	 * @var array
+	 */
+	
+	protected $hidden = array();
+	
+	public function job()
+    {
+        return $this->belongsTo('App\Job', 'type_id', 'id');
+    }
+    public function contest()
+    {
+        return $this->belongsTo('App\Contest', 'type_id', 'id');
+    }
+    public function refundrequest()
+    {
+        return $this->hasMany('App\Requestrefund', 'workstream_id', 'id');
+    }
+    public function refundlatest()
+    {	return $this->hasOne('App\Requestrefund', 'workstream_id', 'id')->orderBy('created_at','DESC')->take('1');
+    }
+    public function cancelorder()
+    {
+        return $this->hasMany('App\Cancelorder', 'workstream_id', 'id');
+    }
+    public function corders()
+    {	$status = array('0','1','2');
+        return $this->hasMany('App\Cancelorder', 'workstream_id', 'id')->whereIN('status',$status);
+    }
+    public function jobcompletion()
+	{
+		return $this->hasOne('App\Jobcompletionrequest','workstream_id','id');
+	}
+	public function jclatest()
+	{
+		return $this->hasOne('App\Jobcompletionrequest', 'workstream_id', 'id')->orderBy('created_at','DESC')->take('1');
+	}
+	public function jcapproved()
+	{
+		return $this->hasOne('App\Jobcompletionrequest','workstream_id','id')->where('status','=','1');
+	} 
+	public function jcrejected()
+	{
+		return $this->hasOne('App\Jobcompletionrequest','workstream_id','id')->where('status','=','-1');
+	}     
+	public function buyer()
+    {
+        return $this->belongsTo('App\User', 'buyer_uid', 'id');
+    }
+	public function seller()
+    {
+        return $this->belongsTo('App\User', 'seller_uid', 'id');
+	}
+	public function proposal()
+    {
+        return $this->belongsTo('App\Proposal', 'proposal_id', 'id');
+	}
+	public function workstreaminteractions()
+    {
+        return $this->belongsTo('App\Workstreaminteraction', 'workstream_id', 'id');
+	}
+
+	public function jobfeedback()
+	{
+        return $this->hasOne('Jobfeedback', 'workstream_id','id')->where('status','>',0);
+	}
+	public function plink(){
+		return url('workstream/view/'.$this->id);
+	}
+	public function partialpayment()
+	{
+		return $this->hasMany('Partialpayment', 'workstream_id', 'id');
+	}
+	public function partiallatest()
+	{	
+		return $this->hasOne('Partialpayment', 'workstream_id', 'id')->orderBy('created_at','DESC')->take('1');
+	}
+	public function depositlatest()
+	{
+		return $this->hasOne('Userpayments', 'source_id', 'id')->orderBy('created_at','DESC')->take('1');
+	}
+	/*
+		function to send email to the buyer for workstream
+	*/
+	public  function email_buyer_service_purchase(){
+		$data = array('workstream'=>$this,'from' => NOTIFICATION_EMAIL,'from_name' => NOTIFICATION_NAME,'to' =>$this->buyer->email,'fname' =>$this->buyer->fname,'sender_name'=> $this->seller->fname,'subject' => $this->buyer->fname.' your service purchase order is successful.');
+		Mail::send('emails.workstream/buyer_service_purchase', $data, function($message) use ($data)
+		{
+		    $message->to($data['to'], $data['fname'])->subject($data['subject']);
+			$message->from($data['from'],$data['from_name']);
+		});
+		return TRUE;
+		
+	}
+
+	public  function email_seller_service_purchase(){
+		$data = array('workstream'=>$this,'from' => NOTIFICATION_EMAIL,'from_name' => NOTIFICATION_NAME,'to' =>$this->seller->email,'fname' =>$this->seller->fname,'sender_name'=> NOTIFICATION_NAME,'subject' =>$this->seller->fname.' you have received an order for your service. ID: #'.$this->proposal->id);
+		Mail::send('emails.workstream/seller_service_purchase', $data, function($message) use ($data)
+		{
+		    $message->to($data['to'], $data['fname'])->subject($data['subject']);
+			$message->from($data['from'],$data['from_name']);
+		});
+		return TRUE;
+		
+	}
+
+	/*function to return status of workstream*/
+	public function status_name(){
+		$status = '';
+			switch($this->status){
+				CASE '1' : $status = 'Active';
+					break;
+				CASE '2' : $status = 'Currently Working';
+					break;
+				CASE '3' : $status = 'Work Completed';
+						break;
+				CASE '4' : $status = 'Payment Approved';
+					break;
+				CASE '5' : $status = 'Feedback Employer';
+					break;
+				CASE '6' : $status = 'Feedback Freelancer';
+					break;
+				CASE '7' : $status = 'Refund';
+					break;
+				CASE '8' : $status = 'Conflict';
+					break;
+				CASE '9' : $status = 'Closed';
+					break;
+				CASE '11' : $status = 'Payment Released';
+					break;
+				CASE '15' : $status = 'Charge Back';
+					break;
+			}
+		return $status;
+	}
+
+	/*function to return color of label a/c to status*/
+	public function status_label(){
+		$label='';
+			switch($this->status){
+				CASE '1' : $label = 'label-info';
+					break;
+				CASE '2' : $label = 'label-info';
+					break;
+				CASE '3' : $label = 'label-info';
+					break;
+				CASE '4' : $label = 'label-success';
+					break;
+				CASE '5' : $label = 'label-info';
+					break;
+				CASE '6' : $label = 'label-info';
+					break;
+				CASE '7' : $label = 'label-warning';
+					break;
+				CASE '8' : $label = 'label-danger';
+					break;
+				CASE '9' : $label = 'label-danger';
+					break;					
+				CASE '11' : $label = 'label-success';
+					break;
+				CASE '15' : $label = 'label-danger';
+					break;	
+			}
+		return $label;
+	}
+}
