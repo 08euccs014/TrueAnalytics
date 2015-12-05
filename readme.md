@@ -1,6 +1,10 @@
 ## True Analytics
 Analytics for you tracking internal system.
 
+![alt tag](https://raw.githubusercontent.com/08euccs014/TrueAnalytics/master/public/assets/image/splash.png)
+![alt tag](https://raw.githubusercontent.com/08euccs014/TrueAnalytics/master/public/assets/image/splash-2.png)
+![alt tag](https://raw.githubusercontent.com/08euccs014/TrueAnalytics/master/public/assets/image/splash-1.png)
+
 
 ## Laravel PHP Framework
 
